@@ -341,8 +341,6 @@ Release
 
    .. note:: Skip this step for a documentation release.
 
-   XXX This should be automated https://clusterhq.atlassian.net/browse/FLOC-1150
-
    - Create a recipe file and push it to the `homebrew-tap`_ repository:
 
      .. prompt:: bash [vagrant@localhost]$
@@ -350,25 +348,10 @@ Release
         cd
         git clone git@github.com:ClusterHQ/homebrew-tap.git "homebrew-tap-${VERSION}"
         cd homebrew-tap-${VERSION}
-        wget --output-document=flocker-${VERSION}.rb http://build.clusterhq.com/results/homebrew/${VERSION}/${VERSION}/Flocker${VERSION}.rb
+        wget http://build.clusterhq.com/results/homebrew/${VERSION}/${VERSION}/flocker-${VERSION}.rb
         git add flocker-${VERSION}.rb
         git commit -m "New Homebrew recipe"
         git push
-
-   - Test Homebrew on OS X.
-     ClusterHQ has a Mac Mini available with instructions for launching a Virtual Machine to do this with:
-
-     Export the version number of the release being completed as an environment variable:
-
-     .. prompt:: bash [osx-user]$
-
-        export VERSION=0.1.2
-
-     .. task:: test_homebrew flocker-${VERSION}
-           :prompt: [osx-user]$
-
-     If tests fail then the either the recipe on the `master` branch or the package it installs must be modified.
-     The release process should not continue until the tests pass.
 
 #. Update the documentation.
 
