@@ -374,6 +374,39 @@ CMD sh -c "trap \"\" 2; sleep 3"
         d.addCallback(added)
         return d
 
+    def test_null_environment(self):
+        """
+        A container that does not include any environment variables contains
+        an empty ``environment`` in the return ``Unit``.
+        """
+        docker_dir = FilePath(self.mktemp())
+        docker_dir.makedirs()
+        docker_dir.child(b"Dockerfile").setContent(
+            b'FROM scratch\n'
+            b'MAINTAINER info@clusterhq.com\n'
+            b'CMD ["/bin/doesnotexist"]'
+        )
+        image = DockerImageBuilder(test=self, source_dir=docker_dir)
+        image_name = image.build()
+        client = self.make_client()
+        name = random_name()
+        if isinstance(client, NamespacedDockerClient):
+            container_name = client._client._to_container_name(name)
+            client._client._client.create_container(
+                name=container_name, image=image_name)
+        else:
+            container_name = client._to_container_name(name)
+            client._client.create_container(
+                name=container_name, image=image_name)
+        self.addCleanup(client.remove, name)
+        d = client.list()
+
+        def got_list(units):
+            unit = [unit for unit in units if unit.name == name][0]
+            self.assertIsNone(unit.environment)
+        d.addCallback(got_list)
+        return d
+
     def test_container_name(self):
         """
         The container name stored on returned ``Unit`` instances matches the
