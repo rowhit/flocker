@@ -540,12 +540,6 @@ class DockerClient(object):
                     break
 
             try:
-                # The ``docker.Client.stop`` method puts the container into
-                # a stopping state, but the container cannot be removed
-                # until the container has actually stopped running.
-                while self._blocking_container_runs(container_name):
-                    sleep(0.01)
-
                 logger.debug('Container %s remove', container_name)
                 self._client.remove_container(container_name)
                 logger.debug('Container %s removed', container_name)
