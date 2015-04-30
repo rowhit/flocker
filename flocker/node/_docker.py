@@ -463,6 +463,9 @@ class DockerClient(object):
                 sleep(0.001)
                 continue
             self._client.start(container_name)
+            while not self._blocking_container_runs(container_name):
+                # Wait for container to be running
+                sleep(0.01)
         d = deferToThread(_add)
 
         def _extract_error(failure):
