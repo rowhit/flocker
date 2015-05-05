@@ -13,7 +13,9 @@ from pyrsistent import PRecord, field
 from zope.interface import implementer
 from boto import ec2
 
-from .blockdevice import IBlockDeviceAPI, BlockDeviceVolume, UnknownVolume
+from .blockdevice import (
+    IBlockDeviceAPI, BlockDeviceVolume, UnknownVolume, AlreadyAttachedVolume
+)
 
 DATASET_ID_LABEL = u'flocker-dataset-id'
 METADATA_VERSION_LABEL = u'flocker-metadata-version'
@@ -156,6 +158,14 @@ class EBSBlockDeviceAPI(object):
             dataset_id=UUID(ebs_volume.tags[DATASET_ID_LABEL])
         )
 
+    def _get(self, blockdevice_id):
+        """
+        """
+        for volume in self.list_volumes():
+            if volume.blockdevice_id == blockdevice_id:
+                return volume
+        raise UnknownVolume(blockdevice_id)
+
     def create_volume(self, dataset_id, size):
         """
         Create a volume on EBS. Store Flocker-specific
@@ -199,7 +209,13 @@ class EBSBlockDeviceAPI(object):
         pass
 
     def attach_volume(self, blockdevice_id, host):
-        pass
+        """
+        """
+        unattached_volume = self._get(blockdevice_id)
+        if unattached_volume.storage_backend_id is not None:
+            raise AlreadyAttachedVolume(blockdevice_id)
+        #instance_id = self.storage_backend_id()
+        #self.connection.attach_volume(blockdevice_id, instance_id, device)
 
     def detach_volume(self, blockdevice_id):
         pass
