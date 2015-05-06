@@ -125,14 +125,18 @@ def main(reactor, args, base_path, top_level):
         ])
         yield perform(
             make_dispatcher(reactor),
-            run_remotely(
-                username=options['vmuser'],
-                address=options['vmhost'],
-                commands=sequence([
-                    task_hack_brew(),
-                    task_test_homebrew(recipe_url),
-                ]),
-            ),
+            sequence([
+                run_remotely(
+                    username=options['vmuser'],
+                    address=options['vmhost'],
+                    commands=task_hack_brew(),
+                ),
+                run_remotely(
+                    username=options['vmuser'],
+                    address=options['vmhost'],
+                    commands=task_test_homebrew(recipe_url),
+                ),
+            ]),
         )
         yield run(reactor, [
             "vmrun", "stop", options['vmpath'].path, "hard",
