@@ -42,6 +42,16 @@ CLUSTERHQ_REPO = {
 }
 
 
+def task_hack_brew():
+    return put(
+        path='.bashrc',
+        content=dedent("""\
+            if [ -x /usr/libexec/path_helper ]; then
+                eval `/usr/libexec/path_helper -s`
+            fi
+            """))
+
+
 def task_test_homebrew(recipe):
     """
     The commands used to install a Homebrew recipe for Flocker and test it.

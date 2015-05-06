@@ -25,9 +25,10 @@ from twisted.internet.error import ProcessTerminated
 from twisted.python.filepath import FilePath
 from twisted.python.usage import Options, UsageError
 
-from flocker.provision._install import task_test_homebrew
+from flocker.provision._install import task_test_homebrew, task_hack_brew
 from flocker.provision._ssh import run_remotely
 from flocker.provision._ssh._conch import make_dispatcher
+from flocker.provision._effect import sequence
 from effect.twisted import perform
 from flocker import __version__
 
@@ -127,7 +128,10 @@ def main(reactor, args, base_path, top_level):
             run_remotely(
                 username=options['vmuser'],
                 address=options['vmhost'],
-                commands=task_test_homebrew(recipe_url)
+                commands=sequence([
+                    task_hack_brew(),
+                    task_test_homebrew(recipe_url),
+                ]),
             ),
         )
         yield run(reactor, [
