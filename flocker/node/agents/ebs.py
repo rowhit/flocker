@@ -4,6 +4,7 @@
 An EBS implementation of the ``IBlockDeviceAPI``.
 """
 
+import string
 import time
 from uuid import UUID
 
@@ -13,6 +14,7 @@ from pyrsistent import PRecord, field
 from zope.interface import implementer
 from boto import ec2
 from boto.utils import get_instance_metadata
+from twisted.python.filepath import FilePath
 
 from .blockdevice import (
     IBlockDeviceAPI, BlockDeviceVolume, UnknownVolume, AlreadyAttachedVolume
@@ -151,7 +153,9 @@ class EBSBlockDeviceAPI(object):
         """
         Look up the EC2 instance ID for this node.
         """
-        return get_instance_metadata()['instance-id'].decode("ascii")
+        #return get_instance_metadata()['instance-id'].decode("ascii")
+        instance_id = 'i-96a8c260'
+        return instance_id
 
     def _get(self, blockdevice_id):
         """
@@ -160,6 +164,19 @@ class EBSBlockDeviceAPI(object):
             if volume.blockdevice_id == blockdevice_id:
                 return volume
         raise UnknownVolume(blockdevice_id)
+
+    def _next_device(self):
+        """
+        """
+        prefix = '/dev/sdf'
+        children = FilePath('/dev').children()
+        letters = string.ascii_lowercase
+        import pdb
+        pdb.set_trace()
+        root = self.connection.get_instance_attribute(
+            instance_id=self.compute_instance_id(),
+            attribute='rootDeviceName')
+        return root
 
     def create_volume(self, dataset_id, size):
         """
@@ -204,14 +221,15 @@ class EBSBlockDeviceAPI(object):
         pass
 
     # cloud_instance_id here too
-    def attach_volume(self, blockdevice_id, host):
+    def attach_volume(self, blockdevice_id, attach_to):
         """
         """
         unattached_volume = self._get(blockdevice_id)
-        if unattached_volume.storage_backend_id is not None:
+        if unattached_volume.attached_to is not None:
             raise AlreadyAttachedVolume(blockdevice_id)
-        #instance_id = self.storage_backend_id()
-        #self.connection.attach_volume(blockdevice_id, instance_id, device)
+        device = self._next_device()
+        device = 'tmpd'
+        self.connection.attach_volume(blockdevice_id, attach_to, device)
 
     def detach_volume(self, blockdevice_id):
         pass

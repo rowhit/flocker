@@ -876,7 +876,7 @@ class IBlockDeviceAPI(Interface):
     Common operations provided by all block device backends, exposed via
     synchronous methods.
 
-    Note: This is an early sketch of the interface and it'll be refined as we
+    Note: This is an early sketch of the interface and it'll be refined as the
     real blockdevice providers are implemented.
     """
     def compute_instance_id():
